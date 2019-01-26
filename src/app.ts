@@ -24,6 +24,7 @@ import * as homeController from "./controllers/home";
 import * as userController from "./controllers/user";
 import * as apiController from "./controllers/api";
 import * as contactController from "./controllers/contact";
+import * as pollController from "./controllers/poll";
 
 
 // API keys and Passport configuration
@@ -121,5 +122,11 @@ app.get("/auth/facebook", passport.authenticate("facebook", { scope: ["email", "
 app.get("/auth/facebook/callback", passport.authenticate("facebook", { failureRedirect: "/login" }), (req, res) => {
   res.redirect(req.session.returnTo || "/");
 });
+
+/**
+ * Poll routes
+ */
+app.get("/poll/new/:title", pollController.getPollNew);
+app.get("/poll/:readablePath", pollController.getPoll);
 
 export default app;

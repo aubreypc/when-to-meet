@@ -59,13 +59,15 @@ const pollSchema = new mongoose.Schema({
     voters: Array,
     readablePath: {
         type: String,
-        default: readablePath
+        default: readablePath,
+        unique: true
     }
 }, { timestamps: true });
 
 // When a new poll is saved to the DB, populate it with PollChoices
-pollSchema.pre("save", (next) => {
+/*pollSchema.pre("save", (next) => {
     if (this.isNew) {
+        console.log("Populating entry");
         const nextDate: Date = this.dateCreated;
         const choices: PollChoice[] = [];
 
@@ -90,7 +92,7 @@ pollSchema.pre("save", (next) => {
         this.choices = choices;
         next();
     }
-});
+});*/
 
 const Poll = mongoose.model("Poll", pollSchema);
 export default Poll;

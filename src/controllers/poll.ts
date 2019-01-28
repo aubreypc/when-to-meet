@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Request, Response, NextFunction } from "express";
 import { default as Poll, PollModel, PollChoice, Voter } from "../models/Poll";
 
@@ -8,7 +9,7 @@ export let getPoll = (req: Request, res: Response) => {
         if (err) {
             return res.send("it broke");
         }
-        return res.send(poll.title);
+        return res.json(poll);
     });
 };
 
@@ -19,32 +20,48 @@ export let getPollNew = (req: Request, res: Response) => {
         title: req.params.title,
     });
     poll.save((err, p) => {
-        return res.send(p.toObject().readablePath);
+        return res.json(p);
     });
 };
 
 export let postPollNew = (req: Request, res: Response) => {
-    req.check(req.params.title, "Poll title is between 1 and 200 characters")
-        .isLength({min: 1, max: undefined});
-    req.check(req.params.duration, "Duration must be an integer between 10 and 1440")
-        .isInt({min: 10, max: 1440});
+    const newPoll = req.body;
 
+    // TODO: Validate POST request
     const errors = req.validationErrors();
     if (errors) {
-        console.log(errors);
         req.flash("errors", errors);
-        return res.redirect("/poll/new");
+        return res.status(500).json({"error": "Something went wrong with validation"});
     }
 
-    const poll = new Poll({
-        title: req.params.title,
-        duration: req.params.duration,
-        earliestTimeOfDay: req.params.earliestTimeOfDay,
-        latestTimeOfDay: req.params.latestTimeOfDay
-    });
+    // Generate all the possible timeslots to serve as poll choices
+    newPoll.choices = generatePollChoices(newPoll.earliestTimeOfDay, newPoll.latestTimeOfDay, newPoll.duration);
 
-    poll.save((err, p) => {
-        console.log(p);
-        return res.send(p.toObject());
+    Poll.create(newPoll).then((p: PollModel) => {
+        return res.json(p.toObject());
     });
+};
+
+export const generatePollChoices = (earliestTimeOfDay: number, latestTimeOfDay: number, duration = 30, numDays = 7) => {
+    const nextDate = new Date();
+    const choices: PollChoice[] = [];
+
+    // Iterate through the poll's date range
+    for (let d = 0;  d < 7; d++) {
+        nextDate.setDate(nextDate.getDate() + 1);
+        nextDate.setHours(earliestTimeOfDay);
+        nextDate.setMinutes(0);
+        nextDate.setSeconds(0);
+
+        // Create a poll choice beginning every `duration` minutes
+        for (let m = 60 * earliestTimeOfDay; m < 60 * latestTimeOfDay; m += duration) {
+            const choice: PollChoice = {
+                startTimestamp: new Date(nextDate.getMinutes() + m),
+                endTimestamp: new Date(nextDate.getMinutes() + m + duration),
+                voters: []
+            };
+            choices.push(choice);
+        }
+    }
+    return choices;
 };

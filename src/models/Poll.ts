@@ -51,13 +51,46 @@ const pollSchema = new mongoose.Schema({
         type: Number,
         default: 9,
     },
-    options: Array,
+    latestTimeOfDay: {
+        type: Number,
+        default: 23,
+    },
+    choices: Array,
     voters: Array,
     readablePath: {
         type: String,
         default: readablePath
     }
 }, { timestamps: true });
+
+// When a new poll is saved to the DB, populate it with PollChoices
+pollSchema.pre("save", (next) => {
+    if (this.isNew) {
+        const nextDate: Date = this.dateCreated;
+        const choices: PollChoice[] = [];
+
+        // Iterate through the poll's date range
+        for (let d = 0;  d < 7; d++) {
+            nextDate.setDate(nextDate.getDate() + 1);
+            nextDate.setHours(this.earliestTimeOfDay);
+            nextDate.setMinutes(0);
+            nextDate.setSeconds(0);
+
+            // Create a poll choice beginning every `duration` minutes
+            for (let m = 60 * this.earliestTimeOfDay; m < 60 * this.latestTimeOfDay; m += this.duration) {
+                const choice: PollChoice = {
+                    startTimestamp: new Date(nextDate.getMinutes() + m),
+                    endTimestamp: new Date(nextDate.getMinutes() + m + this.duration),
+                    voters: []
+                };
+                choices.push(choice);
+            }
+        }
+
+        this.choices = choices;
+        next();
+    }
+});
 
 const Poll = mongoose.model("Poll", pollSchema);
 export default Poll;

@@ -29,6 +29,7 @@ describe("Generating poll choices", () => {
         expect(choices).to.not.have.lengthOf(0);
         done();
     });
+
     it("should return a PollChoice[] of correct length", (done) => {
         expect(choices).to.have.lengthOf(322);
         done();

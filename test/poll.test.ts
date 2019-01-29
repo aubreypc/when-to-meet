@@ -1,21 +1,48 @@
 import app from "../src/app";
 import request from "supertest";
-import { default as Poll, PollChoice } from "../src/models/Poll";
+import { default as Poll, PollChoice, PollAPIObject } from "../src/models/Poll";
 import { generatePollChoices } from "../src/controllers/poll";
 
 const chai = require("chai");
 const expect = chai.expect;
 
 describe("Poll API tests", () => {
+    it("should create a poll and return expected getAPIObject result", (done) => {
+        const createPoll: PollAPIObject = {
+            title: "poll.test.ts",
+            duration: 60,
+            earliestTimeOfDay: 9,
+            latestTimeOfDay: 11,
+        };
+        Poll.create(createPoll, (err, poll) => {
+            const APIObject = poll.getAPIObject();
+            const expected: PollAPIObject = {
+                ...createPoll,
+                earliestDate: APIObject.earliestDate,
+                readablePath: APIObject.readablePath,
+                choices: APIObject.choices,
+                voters: APIObject.voters
+            };
+            expect(APIObject).to.eql(expected); // note: .eql() deep compares objects
+            done();
+        });
+    });
+
     it("should create a poll and fetch its JSON representation via GET", (done) => {
-        Poll.create({title: "poll.test.ts"}, (err, poll) => {
+        const createPoll = {
+            title: "poll.test.ts",
+            duration: 60,
+            earliestTimeOfDay: 9,
+            latestTimeOfDay: 11
+        };
+        Poll.create(createPoll, (err, poll) => {
             return request(app)
                 .get(`/poll/${poll.readablePath}`)
                 .expect(200)
                 .then(res => {
-                    expect(res.body).to.have.property("title");
-                    expect(res.body).to.have.property("earliestTimeOfDay");
-                    expect(res.body).to.have.property("latestTimeOfDay");
+                    const expected = poll.getAPIObject();
+                    // TODO: fix this test by properly retrieving req.body.earliestDate as a Date rather than string
+                    expect(res.body).to.eql(expected);
                     done();
                 });
         });

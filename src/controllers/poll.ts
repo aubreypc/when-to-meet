@@ -38,7 +38,14 @@ export let postPollNew = (req: Request, res: Response) => {
     newPoll.choices = generatePollChoices(newPoll.earliestTimeOfDay, newPoll.latestTimeOfDay, newPoll.duration);
 
     Poll.create(newPoll).then((p: PollModel) => {
-        return res.json(p.toObject());
+        const resObject = {
+            title: p.title,
+            readablePath: p.readablePath,
+            duration: p.duration,
+            earliestTimeOfDay: p.earliestTimeOfDay,
+            latestTimeOfDay: p.latestTimeOfDay
+        };
+        return res.json(resObject);
     });
 };
 

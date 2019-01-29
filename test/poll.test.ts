@@ -6,12 +6,18 @@ import { generatePollChoices } from "../src/controllers/poll";
 const chai = require("chai");
 const expect = chai.expect;
 
-describe("Creating a poll", () => {
+describe("Poll API tests", () => {
     it("should create a poll and fetch its JSON representation via GET", (done) => {
         Poll.create({title: "poll.test.ts"}, (err, poll) => {
             return request(app)
                 .get(`/poll/${poll.readablePath}`)
-                .expect(200, done);
+                .expect(200)
+                .then(res => {
+                    expect(res.body).to.have.property("title");
+                    expect(res.body).to.have.property("earliestTimeOfDay");
+                    expect(res.body).to.have.property("latestTimeOfDay");
+                    done();
+                });
         });
     });
 
@@ -20,6 +26,19 @@ describe("Creating a poll", () => {
             .post("/poll/new")
             .send({"title": "poll.test.ts"})
             .expect(200, done);
+    });
+
+    it("should create poll via POST /poll/new", (done) => {
+        // TODO: write test
+        return request(app)
+            .post("/poll/new")
+            .send({"title": "poll.test.ts"})
+            .then(res => {
+                Poll.findOne(res.body, (err, p) => {
+                    if (err) return done(err);
+                    return done();
+                });
+            });
     });
 });
 

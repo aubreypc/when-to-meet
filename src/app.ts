@@ -127,7 +127,6 @@ app.get("/auth/facebook/callback", passport.authenticate("facebook", { failureRe
  * Poll routes
  */
 app.post("/poll/new/", pollController.postPollNew);
-app.get("/poll/new/:title", pollController.getPollNew);
 app.get("/poll/:readablePath", pollController.getPoll);
 
 export default app;

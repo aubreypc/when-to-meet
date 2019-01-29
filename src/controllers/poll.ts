@@ -13,17 +13,6 @@ export let getPoll = (req: Request, res: Response) => {
     });
 };
 
-// temporary function for dev purposes.
-// actual creation of polls should be a POST
-export let getPollNew = (req: Request, res: Response) => {
-    const poll = new Poll({
-        title: req.params.title,
-    });
-    poll.save((err, p) => {
-        return res.json(p);
-    });
-};
-
 export let postPollNew = (req: Request, res: Response) => {
     const newPoll = req.body;
 

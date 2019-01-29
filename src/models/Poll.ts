@@ -4,13 +4,13 @@ import nouns from "../util/nouns.json";
 
 export type PollModel = mongoose.Document & {
     title: string,
-    dateCreated: Date,
-    dateExpires: Date,
+    earliestDate: Date,
     choices: PollChoice[],
     earliestTimeOfDay: number,
     latestTimeOfDay: number,
     duration: number,
-    voters: Voter[]
+    voters: Voter[],
+    getAPIObject: () => object;
     readablePath: () => void;
 };
 
@@ -40,10 +40,21 @@ export type Voter = {
     name: string
 };
 
+export interface PollAPIObject {
+    title: string;
+    readablePath?: string;
+    earliestDate?: Date;
+    choices?: number[][];
+    voters?: string[];
+    duration?: number;
+    earliestTimeOfDay: number;
+    latestTimeOfDay: number;
+}
 
 const pollSchema = new mongoose.Schema({
     title: String,
-    dateCreated: {
+    duration: Number,
+    earliestDate: {
         type: Date,
         default: Date.now
     },
@@ -64,35 +75,19 @@ const pollSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// When a new poll is saved to the DB, populate it with PollChoices
-/*pollSchema.pre("save", (next) => {
-    if (this.isNew) {
-        console.log("Populating entry");
-        const nextDate: Date = this.dateCreated;
-        const choices: PollChoice[] = [];
-
-        // Iterate through the poll's date range
-        for (let d = 0;  d < 7; d++) {
-            nextDate.setDate(nextDate.getDate() + 1);
-            nextDate.setHours(this.earliestTimeOfDay);
-            nextDate.setMinutes(0);
-            nextDate.setSeconds(0);
-
-            // Create a poll choice beginning every `duration` minutes
-            for (let m = 60 * this.earliestTimeOfDay; m < 60 * this.latestTimeOfDay; m += this.duration) {
-                const choice: PollChoice = {
-                    startTimestamp: new Date(nextDate.getMinutes() + m),
-                    endTimestamp: new Date(nextDate.getMinutes() + m + this.duration),
-                    voters: []
-                };
-                choices.push(choice);
-            }
-        }
-
-        this.choices = choices;
-        next();
-    }
-});*/
+pollSchema.methods.getAPIObject = function() {
+    const APIObject: PollAPIObject = {
+        title: this.title,
+        readablePath: this.readablePath,
+        duration: this.duration,
+        earliestDate: this.earliestDate,
+        earliestTimeOfDay: this.earliestTimeOfDay,
+        latestTimeOfDay: this.latestTimeOfDay,
+        choices: this.choices,
+        voters: this.voters
+    };
+    return APIObject;
+};
 
 const Poll = mongoose.model("Poll", pollSchema);
 export default Poll;

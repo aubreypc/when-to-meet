@@ -9,7 +9,7 @@ export let getPoll = (req: Request, res: Response) => {
         if (err) {
             return res.send("it broke");
         }
-        return res.json(poll);
+        return res.json(poll.getAPIObject());
     });
 };
 

@@ -2,6 +2,7 @@ import app from "../src/app";
 import request from "supertest";
 import { default as Poll, PollChoice, PollAPIObject } from "../src/models/Poll";
 import { generatePollChoices } from "../src/controllers/poll";
+import JSONDatesReviver from "../src/util/reviver";
 
 const chai = require("chai");
 const expect = chai.expect;
@@ -40,8 +41,13 @@ describe("Poll API tests", () => {
                 .get(`/poll/${poll.readablePath}`)
                 .expect(200)
                 .then(res => {
+                    // Need to parse date manually --- supertest doesn't play nice with bodyParser
+                    const parsedBody = {
+                        ...res.body,
+                        earliestDate: JSONDatesReviver("", res.body.earliestDate)
+                    };
                     const expected = poll.getAPIObject();
-                    expect(res.body).to.eql(expected);
+                    expect(parsedBody).to.eql(expected);
                     done();
                 });
         });
@@ -55,7 +61,6 @@ describe("Poll API tests", () => {
     });
 
     it("should create poll via POST /poll/new", (done) => {
-        // TODO: write test
         return request(app)
             .post("/poll/new")
             .send({"title": "poll.test.ts"})

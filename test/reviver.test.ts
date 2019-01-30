@@ -12,7 +12,15 @@ describe("JSON reviver to convert date/time strings into Date objects", () => {
         };
         const stringRepr = JSON.stringify(testObject);
         const parsedWithReviver = JSON.parse(stringRepr, JSONDatesReviver);
+        console.log(parsedWithReviver);
+        console.log(testObject);
         expect(parsedWithReviver).to.eql(testObject);
+        done();
+    });
+
+    it("should pass regex .test()", (done) => {
+        const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\.\d{2,}Z$/;
+        expect(dateFormat.test("2019-01-29T15:45:09.022Z"));
         done();
     });
 });

@@ -41,7 +41,6 @@ describe("Poll API tests", () => {
                 .expect(200)
                 .then(res => {
                     const expected = poll.getAPIObject();
-                    // TODO: fix this test by properly retrieving req.body.earliestDate as a Date rather than string
                     expect(res.body).to.eql(expected);
                     done();
                 });

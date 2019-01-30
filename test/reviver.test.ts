@@ -1,5 +1,4 @@
 import app from "../src/app";
-import request from "supertest";
 import JSONDatesReviver from "../src/util/reviver";
 
 const chai = require("chai");
@@ -12,8 +11,6 @@ describe("JSON reviver to convert date/time strings into Date objects", () => {
         };
         const stringRepr = JSON.stringify(testObject);
         const parsedWithReviver = JSON.parse(stringRepr, JSONDatesReviver);
-        console.log(parsedWithReviver);
-        console.log(testObject);
         expect(parsedWithReviver).to.eql(testObject);
         done();
     });

@@ -2,6 +2,7 @@ import express from "express";
 import compression from "compression";  // compresses requests
 import session from "express-session";
 import bodyParser from "body-parser";
+import JSONDatesReviver from "./util/reviver";
 import logger from "./util/logger";
 import lusca from "lusca";
 import dotenv from "dotenv";
@@ -48,7 +49,7 @@ app.set("port", process.env.PORT || 3000);
 app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "pug");
 app.use(compression());
-app.use(bodyParser.json());
+app.use(bodyParser.json({reviver: JSONDatesReviver}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator());
 app.use(session({
